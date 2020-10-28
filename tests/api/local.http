@@ -4,3 +4,22 @@ http://localhost:9528/dev-api/vue-admin-template/table/list
 ### 任务日志
 http://localhost:9528/dev-api/vue-admin-template/missionLog/list
 
+### 账户列表
+http://localhost:9528/dev-api/vue-admin-template/companyAccount/list
+
+### 更新一个账户的token
+POST http://localhost:9528/dev-api/vue-admin-template/companyAccount/getToken
+content-type: application/json
+
+{
+    "sysUserId":"1233333"
+}
+
+### 提交验证码
+POST http://localhost:9528/dev-api/vue-admin-template/companyAccount/submitVerification
+content-type: application/json
+
+{
+    "sysUserId":"1233333",
+    "code":"天下无贼"
+}
