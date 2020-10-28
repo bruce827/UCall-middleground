@@ -229,7 +229,7 @@
                 this
                     .$refs['dataForm']
                     .validate(valid => {
-                        if (valid && nameValidator(this.temp.companyName,this.list)) {
+                        if (valid && this.nameValidator(this.temp.companyName,this.list)) {
                             const tempData = Object.assign({}, this.temp, {type:1})
                             // this.tempData.type = 1
                             createOrEdit(tempData).then((res) => {
