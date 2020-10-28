@@ -44,7 +44,7 @@
           <span>{{ scope.row.runTime | dateTimeFilter}}</span>
         </template>
       </el-table-column>
-      <!-- 任务id -->
+      <!-- 任务id，先不展示了 -->
       <!-- <el-table-column :label="'任务id'" min-width="80px" prop="missionId">
       </el-table-column> -->
       <!-- 任务名称 -->
@@ -76,7 +76,6 @@
           <span>{{ scope.row.nextRunTime | dateTimeFilter }}</span>
         </template>
       </el-table-column>
-      中台
       <!-- 操作栏，根据当前行的不同状态显示按钮 -->
       <el-table-column
         :label="'操作栏'"
@@ -84,8 +83,8 @@
         width="230"
         class-name="small-padding fixed-width">
         <template slot-scope="scope">
-          <!-- 错误日志 -->
-          <el-button v-if="scope.row.missionStus != 0" type="primary" size="mini" @click="handleUpdate(scope.row)">错误日志</el-button>
+          <!-- 错误日志，如果状态为成功则不显示 -->
+          <el-button v-if="scope.row.missionStus != 0" type="primary" size="mini" @click="handleShowError(scope.row.errorLog)">错误日志</el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -100,16 +99,20 @@
       :limit.sync="listQuery.pageSize"
       @pagination="getList"/>
     <!-- 错误日志弹窗 -->
-    <el-dialog :visible.sync="dialogPvVisible" title="阅读设备统计">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="平台"/>
-        <el-table-column prop="pv" label="点击量"/>
-      </el-table>
+    <el-dialog :visible.sync="dialogPvVisible" title="错误日志">
+      <div>
+          <el-input
+            type="textarea"
+            :autosize="{ minRows: 2, maxRows: 4}"
+            v-model="errorMsg">
+          </el-input>
+      </div>
+    
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="dialogPvVisible = false">关闭</el-button>
       </span>
     </el-dialog>
-    <!-- 点击阅读数弹窗结束 -->
+    <!-- 错误日志弹窗结束 -->
   </div>
 </template>
 
@@ -119,18 +122,6 @@ import { getList } from '@/api/missonLog'
 import { parseTime } from '@/utils'
 // 分页组件，封装了element组件
 import Pagination from '@/components/Pagination'
-
-/**
- * 点评输入框验证
- * params:text[string|number]=>输入的内容；callback[fun]：回调
- */
-const remarkValidator = (rule, text, callback) => {
-  if (!text) {
-    callback(new Error('必须输入文字才可以哦'))
-  } else {
-    callback()
-  }
-}
 
 export default {
   name: 'MissonLog',
@@ -184,34 +175,6 @@ export default {
         // 任务状态
         missionStus:null
       },
-      // 重要性码表，展现形式为图形，有文字提示
-      importanceOptions: [
-        {
-          value: 1,
-          label: '低'
-        }, {
-          value: 2,
-          label: '中'
-        }, {
-          value: 3,
-          label: '高'
-        }
-      ],
-      sortOptions: [
-        {
-          label: 'ID 升序',
-          // key: "+id",
-          value: '+id'
-        }, {
-          label: 'ID 降序',
-          // key: "-id",
-          value: '-id'
-
-        }
-      ],
-      statusOptions: [
-        'published', 'draft', 'deleted'
-      ],
       // 任务状态
       missionStusMapper:[
         {
@@ -222,66 +185,10 @@ export default {
           label: '失败'
         }
       ],
-      showReviewer: false,
-      // 新建、编辑页面数据绑定
-      temp: {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        type: '',
-        status: 'published'
-      },
-      dialogFormVisible: false,
-      dialogStatus: '',
-      textMap: {
-        update: '编辑',
-        create: '新增'
-      },
+      // 错误日志弹窗
       dialogPvVisible: false,
-      pvData: [],
-      rules: {
-        // 类型进行非空校验
-        type: [
-          {
-            // 必填
-            required: true,
-            // 提示信息
-            message: '类型为必填',
-            // 更改时候触发
-            trigger: 'change'
-          }
-        ],
-        timestamp: [
-          {
-            type: 'date',
-            required: true,
-            message: '时间为必填',
-            trigger: 'change'
-          }
-        ],
-        title: [
-          {
-            required: true,
-            message: '标题为必填',
-            // 失去焦点时候触发
-            trigger: 'blur'
-          },{
-            min:5,
-            message:"您输入的标题太短啦",
-            trigger:'blur'
-          }
-        ],
-        // 可以添加自定义验证
-        remark: [
-          {
-            validator: remarkValidator, // 自定义验证
-            trigger: 'blur'
-          }
-        ]
-      },
-      downloadLoading: false
+      // 错误日志信息
+      errorMsg:''
     }
   },
   created() {
@@ -310,140 +217,24 @@ export default {
       this.listQuery.page = 1
       this.getList()
     },
-    handleModifyStatus(row, status) {
-      this.$message({ message: '操作成功', type: 'success' })
-      row.status = status
-    },
-    resetTemp() {
-      this.temp = {
-        id: undefined,
-        importance: 1,
-        remark: '',
-        timestamp: new Date(),
-        title: '',
-        status: 'published',
-        type: ''
-      }
-    },
-    handleCreate() {
-      // 重置表单
-      this.resetTemp()
-      // 弹窗状态
-      this.dialogStatus = 'create'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.
-          $refs['dataForm'].
-        // 初始页面不需要进行校验
-          clearValidate()
-      })
-    },
-    // 创建
-    createData() {
-      this.
-        $refs['dataForm'].
-        validate(valid => {
-          if (valid) {
-            this.temp.id = parseInt(Math.random() * 100) + Math.pow(100, 2) // 随机生成id
-            this.temp.author = '徐健'
-            // 模拟请求，不需要返回结果
-            createArticle(this.temp).then(() => {
-              this.
-                list.
-                unshift(this.temp)
-              this.dialogFormVisible = false
-              this.$notify({
-                title: '成功',
-                message: '创建成功',
-                type: 'success',
-                duration: 2000
-              })
-            })
-          }
-        })
-    },
-    // 确认按钮的逻辑
-    handleUpdate(row) {
-      this.temp = Object.assign({}, row) 
-      this.temp.timestamp = new Date(this.temp.timestamp)
-      this.dialogStatus = 'update'
-      this.dialogFormVisible = true
-      this.$nextTick(() => {
-        this.
-          $refs['dataForm'].
-          clearValidate()
-      })
-    },
-    // 修改
-    updateData() {
-      this.
-        $refs['dataForm'].
-        validate(valid => {
-          if (valid) {
-            const tempData = Object.assign({}, this.temp)
-            // 转换为时间戳
-            tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-            // 样例数据，同样不需要返回
-            updateArticle(tempData).then(() => {
-              for (const v of this.list) {
-                if (v.id === this.temp.id) {
-                  const index = this.
-                    list.
-                    indexOf(v)
-                  this.
-                    list.
-                    splice(index, 1, this.temp)
-                  break
-                }
-              }
-              this.dialogFormVisible = false
-              this.$notify({ title: '成功', message: '更新成功', type: 'success', duration: 2000 })
-            })
-          }
-        })
-    },
-    handleDelete(row) {
-      this.$notify({ title: '成功', message: '删除成功', type: 'success', duration: 2000 })
-      const index = this.
-        list.
-        indexOf(row)
-      this.
-        list.
-        splice(index, 1)
-    },
     handleFetchPv(pv) {
       fetchPv(pv).then(response => {
         this.pvData = response.data.pvData
         this.dialogPvVisible = true
       })
     },
-    handleDownload() {
-      // // 应用file-saver实现导出（导入实现方式相同）
-      // this.downloadLoading = true
-      //           import('@/vendor/Export2Excel').then(excel => {
-      //             const tHeader = ['timestamp', 'title', 'type', 'importance', 'status']
-      //             const filterVal = ['timestamp', 'title', 'type', 'importance', 'status']
-      //             const data = this.formatJson(filterVal, this.list)
-      //             excel.export_json_to_excel({ header: tHeader, data, filename: 'table-list' })
-      //             this.downloadLoading = false
-      //           })
-    },
-    formatJson(filterVal, jsonData) {
-      return jsonData.map(v => filterVal.map(j => {
-        if (j === 'timestamp') {
-          return parseTime(v[j])
-        } else {
-          return v[j]
-        }
-      }))
+    // 展示错误信息
+    handleShowError(msg) {
+      this.errorMsg = msg.toString();
+      this.dialogPvVisible = !this.dialogPvVisible
     },
     getDy() {
       const dyHeight = document.body.clientHeight
       // 浏览器视窗高度-上方的组件，这里的930是估计值
       if (dyHeight > 930) {
-        this.listQuery.limit = 20
+        this.listQuery.pageSize = 20
       }
-    },
+    }
 
   }
 }

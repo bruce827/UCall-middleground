@@ -65,6 +65,27 @@ export const constantRoutes = [
     }]
   },
   {
+    path: '/operation',
+    component: Layout,
+    redirect: '/operation/company',
+    name: 'Operation',
+    meta: { title: '业务方管理', icon: 'company' },
+    children: [
+      {
+        path: 'company',
+        name: 'Company',
+        component: () => import('@/views/company/index'),
+        meta: { title: '业务方管理'}
+      },
+      {
+        path: 'tree',
+        name: 'Tree',
+        component: () => import('@/views/tree/index'),
+        meta: { title: '账号管理' }
+      }
+    ]
+  },
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',

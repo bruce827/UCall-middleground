@@ -5,13 +5,17 @@ const user = require('./user')
 const table = require('./table')
 // 任务日志
 const missonLog = require('./missonLog')
+// 业务方管理
+const company = require('./company')
+
 
 
 
 const mocks = [
   ...user,
   ...table,
-  ...missonLog
+  ...missonLog,
+  ...company
 ]
 console.log(mocks);
 
