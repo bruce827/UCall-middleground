@@ -78,9 +78,9 @@ export const constantRoutes = [
         meta: { title: '业务方管理'}
       },
       {
-        path: 'tree',
-        name: 'Tree',
-        component: () => import('@/views/tree/index'),
+        path: 'account',
+        name: 'Account',
+        component: () => import('@/views/company/account'),
         meta: { title: '账号管理' }
       }
     ]

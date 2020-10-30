@@ -30,7 +30,7 @@ const accountData = Mock.mock({
         // 账号绑定任务
         missions:'任务一、任务二',
         // 账户类型
-        'accountType|1':[0,1],
+        'accountType|1':[0,1,2],
         // 创建时间
         createDate: '@datetime',
         // 最后使用时间
@@ -44,6 +44,11 @@ const accountData = Mock.mock({
         },
         // 账户状态
         'accountStus|1': [0,1,2,3],
+        // 账户描述
+        accountDesc:'@csentence()',
+        // 密码
+        password:"@word()"
+    
     }]
 })
 
@@ -124,12 +129,13 @@ module.exports = [
                 pageNum = 1,
                 pageSize = 20,
             } = param2Obj(config.url)
+            
             // 条件过滤
             let mockList = accountData.items.filter(item => {
                 // 账户名称模糊查询
                 if (account && item.account.indexOf(account) < 0) return false
                 // 业务方筛选
-                if (companyId && item.company?.companyId != companyId) return false
+                if (companyId && item.company?.code != companyId) return false
                 return true
             })
 
@@ -205,7 +211,7 @@ module.exports = [
 
             return {
                 code: 20000,
-                msg: '成功',
+                msg: '验证码发送成功',
                 success: 0
             }
         }
