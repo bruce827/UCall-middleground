@@ -78,7 +78,7 @@ module.exports = [
             )
 
             return {
-                code: 20000,
+                code: 200,
                 total: mockList.length,
                 rows: pageList
             }
@@ -95,7 +95,7 @@ module.exports = [
                 type
             } = req.body
             return {
-                code: 20000,
+                code: 200,
                 msg: (type == 0?'新增':'编辑')+'操作成功',
                 success: 0
             }
@@ -109,7 +109,7 @@ module.exports = [
             console.log(req.body);
 
             return {
-                code: 20000,
+                code: 200,
                 msg: '删除'+'操作成功',
                 success: 0
             }
@@ -145,7 +145,7 @@ module.exports = [
             )
 
             return {
-                code: 20000,
+                code: 200,
                 total: mockList.length,
                 rows: pageList
             }
@@ -164,7 +164,7 @@ module.exports = [
             console.log(req.body);
             
             return {
-                code: 20000,
+                code: 200,
                 msg: (type == 0?'新增':'编辑')+'操作成功',
                 success: 0
             }
@@ -178,7 +178,7 @@ module.exports = [
             console.log(req.body);
 
             return {
-                code: 20000,
+                code: 200,
                 msg: '删除'+'操作成功',
                 success: 0
             }
@@ -192,7 +192,7 @@ module.exports = [
             console.log(req.body);
 
             return {
-                code: 20000,
+                code: 200,
                 msg: '成功',
                 data:{
                     // 学而思的图片
@@ -210,7 +210,7 @@ module.exports = [
             console.log(req.body);
 
             return {
-                code: 20000,
+                code: 200,
                 msg: '验证码发送成功',
                 success: 0
             }

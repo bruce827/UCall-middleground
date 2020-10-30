@@ -36,6 +36,16 @@ module.exports = {
       warnings: false,
       errors: true
     },
+    // 配置跨域
+    // proxy:{
+    //   [process.env.VUE_APP_BASE_API]:{
+    //     target:'192.168.25.139',
+    //     changOrigin:true,
+    //     pathRewrite:{
+    //       ['^' + process.env.VUE_APP_BASE_API]:''
+    //     }
+    //   }
+    // },
     before: require('./mock/mock-server.js')
   },
   configureWebpack: {

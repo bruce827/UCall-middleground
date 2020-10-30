@@ -86,6 +86,17 @@ export const constantRoutes = [
     ]
   },
   {
+    path: '/mission',
+    component: Layout,
+    redirect: '/misson',
+    children: [{
+      path: 'mission',
+      name: 'Mission',
+      component: () => import('@/views/mission/index'),
+      meta: { title: '任务管理', icon: 'mission' }
+    }]
+  },
+  {
     path: '/example',
     component: Layout,
     redirect: '/example/table',

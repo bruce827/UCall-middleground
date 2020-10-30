@@ -7,6 +7,9 @@ const table = require('./table')
 const missonLog = require('./missonLog')
 // 业务方管理
 const company = require('./company')
+// 任务管理
+const mission = require('./mission')
+
 
 
 
@@ -15,9 +18,9 @@ const mocks = [
   ...user,
   ...table,
   ...missonLog,
-  ...company
+  ...company,
+  ...mission
 ]
-console.log(mocks);
 
 
 // for front mock

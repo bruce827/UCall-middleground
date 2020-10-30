@@ -1,10 +1,12 @@
 import request from '@/utils/request'
 
 const siteUrl = '/vue-admin-template'
+// const siteUrl = 'http://192.168.25.139:8081'
 // 业务方列表
 export function getList(params) {
     return request({
         url: siteUrl+'/company/list',
+        // url:'http://192.168.25.139:8081/businessconfig/list',
         method: 'get',
         params
     })
