@@ -229,9 +229,8 @@
                 this
                     .$refs['dataForm']
                     .validate(valid => {
-                        if (valid && this.nameValidator(this.temp.companyName,this.list)) {
+                        if (valid) {
                             const tempData = Object.assign({}, this.temp, {type:1})
-                            // this.tempData.type = 1
                             createOrEdit(tempData).then((res) => {
                                 // TODO:联调时候删除
                                 for (const v of this.list) {

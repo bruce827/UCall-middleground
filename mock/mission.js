@@ -14,6 +14,8 @@ const data = Mock.mock({
         createDate: '@date',
         // 任务名称
         missionName: '@ctitle(6, 10)',
+        // 任务Url
+        missionUrl: 'www.'+'@word()'+'.com',
         // 任务描述
         missionDesc: '@cparagraph(1)',
         // 业务方
@@ -24,7 +26,10 @@ const data = Mock.mock({
         // 执行账户
         account:'001',
         // 是否有计划
-        'isPlan|1':[0,1]
+        'isPlan|1':[0,1],
+        // 计划执行时间
+        planTime:'12:32:12'
+    
 
     }]
 })
@@ -123,6 +128,20 @@ module.exports = [
             return {
                 code: 200,
                 msg: '删除'+'操作成功',
+                success: 0
+            }
+        }
+    },
+    // 任务计划时间
+    {
+        url: '/vue-admin-template/mission/updateOnePlan',
+        type: 'post',
+        response: (req,res) => {
+            console.log(req.body);
+
+            return {
+                code: 200,
+                msg: '更新计划成功',
                 success: 0
             }
         }

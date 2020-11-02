@@ -6,7 +6,7 @@
             <el-form 
                 :model="goodsFormTemp" 
                 :rules="rules" 
-                label-position="left" 
+                label-position="right" 
                 label-width="100px" 
                 ref="goodsForm">
                 <!-- 任务 -->
@@ -18,7 +18,7 @@
                     <el-input placeholder="在此输入接口URL" v-model="goodsFormTemp.missionUrl"/>
                 </el-form-item>
                 <!-- 执行账户 -->
-                <el-form-item :label="'账户类型'" prop="selectAccount">
+                <el-form-item :label="'执行账户'" prop="selectAccount">
                     <el-cascader 
                         :options="AccountOptions" 
                         @change="handleCascaderChange" 
@@ -28,7 +28,7 @@
                 </el-form-item>
                 <!-- 任务描述 -->
                 <el-form-item :label="'备注'" prop="missionDesc">
-                    <el-input :autosize="{ minRows: 2, maxRows: 4}" placeholder="请在此输入您描述" type="textarea" v-model="goodsFormTemp.accountDesc"/>
+                    <el-input :autosize="{ minRows: 3, maxRows: 4}" placeholder="请在此输入您描述" type="textarea" v-model="goodsFormTemp.missionDesc"/>
                 </el-form-item>
             </el-form>
             <div class="dialog-footer" slot="footer">
@@ -126,25 +126,22 @@
                 // 加载表单码表数据
                 this.handleCreate();
                 // 编辑页面回显数据
-                // if (this.addFormStatus == "update") {
-                //     // 如果是编辑需要将数据绑定到表单上
-                //     this.goodsFormTemp = Object.assign({}, this.updateGoods);
-                //     // 对图片做数据映射
-                //     this.fileList = this
-                //         .goodsFormTemp
-                //         .images
-                //         .reduce((acc, cur, index) => {
-                //             acc.push({name: index, url: cur});
-                //             return acc;
-                //         }, []);
-                //     // 取消校验
-                //     this.$nextTick(() => {
-                //         this
-                //             .$refs
-                //             .goodsForm
-                //             .clearValidate();
-                //     });
-                // }
+                if (this.addFormStatus == "update") {
+                    // 如果是编辑需要将数据绑定到表单上
+                    this.goodsFormTemp = Object.assign({}, this.updateGoods);
+                    // 执行账户级联映射
+                    // TODO:mock数据级联数据写死，联调时候删除
+                    this.goodsFormTemp.selectAccount = ["650000198607309651","410000200301234912"]
+                     // 联调时候放开
+                    // this.goodsFormTemp.selectAccount = [this.goodsFormTemp.company?.code,this.goodsFormTemp.account]
+                    // 取消校验
+                    this.$nextTick(() => {
+                        this
+                            .$refs
+                            .goodsForm
+                            .clearValidate();
+                    });
+                }
             }
         },
         methods: {
@@ -154,9 +151,10 @@
                 /** 
                  * 重构账户信息数据，使其符合级联菜单。
                  * 原则是不显示没有可用账户的业务方。
-                 * 级联选择只关心系统的用户id。
+                 * 级联选择只关心系统的用户id,由于有默认分页，理论上应该直接获取list的总数再查询一次
+                 * 这里为了简便，就直接给了一个后台无法拒绝的数目
                 */
-                getAccountList().then((response) => {
+                getAccountList({pageSize:500}).then((response) => {
                     var accountData = response.rows;
                     // console.log(accountData);
                     // 将业务方数据进行处理
@@ -187,6 +185,7 @@
                                 // 将当前账号插入到指定业务方下
                                 if(acc[i].value == _value){
                                     acc[i].children.push(_child)
+                                    continue
                                 }
                             }
                         }
@@ -227,18 +226,22 @@
                             // 执行新增，为其赋予默认状态
                             var _missionData = {
                                 ...this.goodsFormTemp,
+                                sysUserId:this.goodsFormTemp?.selectAccount[1]
                             };
+                            console.log(_missionData);
+                            debugger
+                            
                             // 调用请求接口
                             create(_missionData).then((response) => {
                                 // 在前台手动模拟一条数据，刷新后消失
                                 // TODO：向父级组件传递新增数据，联调时删除
-                                this.$emit('fakeAddGood',goodData)
+                                this.$emit('fakeAddGood',_missionData)
                                 // 关闭弹窗
                                 this.closeDialog();
                                 // TODO:刷新父级组件,联调时候打开
                                 // this.$emit("fetch");
                                 // 提示成功
-                                this.$notify({title: "成功", message: "创建商品成功", type: "success", duration: 4000});
+                                this.$notify({title: "成功", message: response.msg, type: "success", duration: 4000});
                             });
                         }
                     });
@@ -255,24 +258,22 @@
                     .goodsForm
                     .validate((valid) => {
                         if (valid) {
-                            // 更新操作尽量不要使用原对象的数据，要复制一份保存当前状态
-                            var tempData = Object.assign(this.goodsFormTemp, {
-                                costPrice: this.goodsFormTemp.frontCostPrice,
-                                salePrice: this.goodsFormTemp.frontSalePrice,
-                                skuStatus: "0"
+                            // 复制一份数据
+                            var tempData = Object.assign({},this.goodsFormTemp, {
+                                sysUserId : this.goodsFormTemp?.selectAccount[1]
                             });
                             // 样例接口，不需要返回
-                            updateGood(tempData).then((response) => {
-                                this.$emit("fakeUpdateGood", tempData);
+                            update(tempData).then((response) => {
                                 this.closeDialog();
                                 this.$notify({title: "成功", message: response.msg, type: "success"});
                             });
                         }
                     });
             },
+            // 级联改变时触发
             handleCascaderChange(value) {
                 console.log(value);
-                debugger
+                // debugger
             }
         
         }

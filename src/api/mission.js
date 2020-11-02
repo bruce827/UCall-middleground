@@ -33,3 +33,11 @@ export function deleteOne(params) {
         data:params
     })
 }
+// 添加任务计划
+export function updateOnePlan(params) {
+    return request({
+        url: siteUrl+'/mission/updateOnePlan',
+        method: 'post',
+        data:params
+    })
+}

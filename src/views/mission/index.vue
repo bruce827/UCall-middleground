@@ -45,6 +45,27 @@
         <el-button @click="" class="filter-item" icon="el-icon-plus" type="primary">
             批量执行
         </el-button>
+        <el-checkbox
+            v-model="showMissionId"
+            class="filter-item"
+            style="margin-left:15px;"
+            @change="tableKey=tableKey+1">
+            任务id
+        </el-checkbox>
+        <el-checkbox
+            v-model="showCreateDate"
+            class="filter-item"
+            style="margin-left:15px;"
+            @change="tableKey=tableKey+1">
+            创建日期
+        </el-checkbox>
+        <el-checkbox
+            v-model="showMissionUrl"
+            class="filter-item"
+            style="margin-left:15px;"
+            @change="tableKey=tableKey+1">
+            任务Url
+        </el-checkbox>
         <!-- table主体，具备加载等待动画、边框、宽度自适应、高亮当前行等交互 -->
         <el-table 
             :data="list" 
@@ -61,15 +82,17 @@
             <!-- 复选框 -->
             <el-table-column type="selection" width="40" align="center"/>
             <!-- 任务编号 -->
-            <el-table-column :label="'账号'" align="left" min-width="110px" prop="missionId"/>
+            <el-table-column v-if="showMissionId" :label="'任务编号'" align="left" min-width="110px" prop="missionId"/>
             <!-- 创建日期 -->
-            <el-table-column :label="'创建日期'" align="center" prop="createDate" width="120px"/>
+            <el-table-column v-if="showCreateDate" :label="'创建日期'" align="center" prop="createDate" width="120px"/>
             <!-- 任务名称 -->
-            <el-table-column :label="'绑定任务'" max-width="80px" prop="missionName"/>
+            <el-table-column :label="'任务名称'" min-width="100px" prop="missionName"/>
+            <!-- url -->
+            <el-table-column v-if="showMissionUrl" :label="'任务url'" align="center" prop="missionUrl" min-width="160px"/>
             <!-- 任务描述 -->
-            <el-table-column :label="'任务描述'" align="left" prop="missionDesc" width="120px"/>
+            <el-table-column :label="'任务描述'" align="left" prop="missionDesc"/>
             <!-- 业务方 -->
-            <el-table-column :label="'业务方'" align="center" prop="company.name" min-width="120px"/>
+            <el-table-column :label="'业务方'" align="center" prop="company.name" max-width="120px"/>
             <!-- 是否有计划 -->
             <el-table-column label="计划" align="center" width="120px">
                 <template slot-scope="scope">
@@ -83,8 +106,8 @@
                 <template slot-scope="scope">
                     <!-- 编辑按钮 -->
                     <el-button @click="handleUpdate(scope.row)" size="mini" type="primary">编辑</el-button>
-                    <!-- 更新 -->
-                    <el-button @click="handelupdateToken(scope.row)" size="mini" type="primary">计划</el-button>
+                    <!-- 计划 -->
+                    <el-button @click="handelUpdatePlan(scope.row)" size="mini" type="primary">计划</el-button>
                     <!-- 确认删除对话框 -->
                     <el-popconfirm @onConfirm="handleDelete(scope.row)" title="删除后不可恢复确定删除吗？">
                         <el-button size="mini" slot="reference">删除</el-button>
@@ -104,11 +127,16 @@
             :addFormVisible.sync="addFormVisible"
             :addFormStatus="addFormStatus"
             @fetch="getList"
-            @fakeAddGood=""
+            @fakeAddGood="fakeAddRow"
             :updateGoods = "currentRow"
             @fakeUpdateGood=""
         />
-        <!-- 计划弹窗 -->
+        <!-- 计划弹窗，由于现在写的计划就是一个玩笑，只能改变任务执行时间，所以将模块抽离出来以便后期维护 -->
+        <UpdatePlanDialog
+            :updatePlanVisible.sync="palnDialogVisible"
+            @fetch="getList"
+            :updateGoods = "currentRow"
+        />
     </div>
 </template>
 
@@ -124,6 +152,8 @@
 
     // 添加、编辑弹窗
     import AddOrEditDialog from './AddOrEditDialog'
+    // 计划弹窗
+    import UpdatePlanDialog from './UpdatePlanDialog'
     // 业务码表
     // 账号类型码表
     const accountTypeMapper = [
@@ -189,7 +219,8 @@
         name: "Mission",
         components: {
             Pagination,
-            AddOrEditDialog
+            AddOrEditDialog,
+            UpdatePlanDialog
         },
         filters: {
             // 账户类型文字
@@ -225,6 +256,12 @@
                 list: [], 
                 total: 0, 
                 listLoading: true,
+                // 显示任务id
+                showMissionId:false,
+                // 显示创建时间
+                showCreateDate:false,
+                // 显示Url     
+                showMissionUrl:false,
                 // 查询条件
                 listQuery: {
                     pageNum: 1,
@@ -293,11 +330,13 @@
                         }
                     ]
                 },
-                // 图片验证码弹窗
-                tokenDialogVisible:false,
-                tokenDialogTitle:'学而思',
-                // 当前获取验证码账户
+                // 添加计划弹窗
+                palnDialogVisible:false,
+                // 当前选中任务
                 currentRow:null,
+                // 计划弹窗
+                updatePlanVisible:false,
+
 
             };
         },
@@ -367,54 +406,17 @@
                 //         .clearValidate();
                 // });
             },
-            // 创建
-            createData() {
-                this
-                    .$refs["dataForm"]
-                    .validate((valid) => {
-                        // 表单校验与重名校验都通过
-                        if (valid) {
-                            this.temp.type = 0;
-                            // 模拟请求，不需要返回结果
-                            createOrEditAccount(this.temp).then((res) => {
-                                // TODO: 联调时删除
-                                this.temp.sysUserId = parseInt(Math.random() * 100) +
-                                        Math.pow(100, 2); // 随机生成id
-                                this.temp.createDate = "2020-12-12";
-                                this.temp.missions = "测试任务";
-                                this.temp.company = {
-                                    code: 123,
-                                    name: "测试业务方"
-                                };
-                                this.temp.accountStus = 0;
-                                this
-                                    .list
-                                    .unshift(this.temp);
-                                // 假数据结束
-                                this.dialogFormVisible = false;
-                                // 刷新列表 TODO:联调时候放开
-                                // this.getList()
-                                this.$notify({title: "成功", message: res.msg, type: "success", duration: 2000});
-                            });
-                        }
-                    });
-            },
             // 编辑业务方
             handleUpdate(row) {
-                // 选项需要映射后单独赋值
-                this.temp = Object.assign({}, row,{
-                    // 业务方
-                    companyId:row.company.name,
-                    // 账户类型
-                    accountType:accountTypeMapper[row.accountType]?.label
-                });
-                this.dialogStatus = "update";
-                this.dialogFormVisible = true;
-                this.$nextTick(() => {
-                    this
-                        .$refs["dataForm"]
-                        .clearValidate();
-                });
+                // 当前数据回显
+                this.currentRow = row;
+                this.addFormStatus = "update";
+                this.addFormVisible = true;
+                // this.$nextTick(() => {
+                //     this
+                //         .$refs["dataForm"]
+                //         .clearValidate();
+                // });
             },
             // 修改
             updateData() {
@@ -476,10 +478,21 @@
                 this.multipleSelection = val;
             },
             // 更新验证码图标
-            handelupdateToken(row){
+            handelUpdatePlan(row){
                 this.currentRow = row
-                this.tokenDialogVisible = true
-            }
+                this.palnDialogVisible = true
+            },
+            // mock数据时的新增方法，联调时可以删除
+            fakeAddRow(rowData){
+                console.log(rowData);
+                this.list.push(rowData)
+            },
+            // 编辑业务方
+            handleUpdate(row) {
+                // 当前数据回显
+                this.currentRow = row;
+                this.updatePlanVisible = true;
+            },
         }
     
     };
