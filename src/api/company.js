@@ -37,6 +37,7 @@ export function getAccountList(params) {
 }
 // 新建、编辑账户列表
 export function createOrEditAccount(params) {
+   
     return request({
         url: siteUrl+'/companyAccount/createOrEdit',
         method: 'post',
@@ -65,5 +66,14 @@ export function submitVerification(params) {
         url: siteUrl+'/companyAccount/submitVerification',
         method: 'post',
         data:params
+    })
+}
+// 获取UCall业务类型
+export function getUcallBusinessType(params) {
+    
+    return request({
+        url: siteUrl+'/company/ucallBusinessType',
+        method: 'get',
+        params
     })
 }

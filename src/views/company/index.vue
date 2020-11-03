@@ -12,6 +12,13 @@
         <el-button @click="handleCreate" class="filter-item" icon="el-icon-plus" type="primary">
             新建
         </el-button>
+        <el-checkbox
+            v-model="showUCallBusiness"
+            class="filter-item"
+            style="margin-left:15px;"
+            @change="tableKey=tableKey+1">
+            UCall业务类型
+        </el-checkbox>
         <!-- table主体，具备加载等待动画、边框、宽度自适应、高亮当前行等交互 -->
         <el-table :data="list" :key="tableKey" border="border" element-loading-spinner="el-icon-loading" element-loading-text="列表加载中" fit="fit" highlight-current-row="highlight-current-row" style="width: 100%;" v-loading="listLoading">
             <!-- 序号 -->
@@ -20,6 +27,16 @@
             <el-table-column :label="'创建日期'" align="center" prop="createDate" width="120px"></el-table-column>
             <!-- 业务方名称 -->
             <el-table-column :label="'业务方名称'" align="center" min-width="110px" prop="companyName"/>
+            <!-- UCall业务类型 -->
+            <el-table-column 
+                v-if="showUCallBusiness"
+                :label="'UCall业务类型'" 
+                align="center" 
+                min-width="110px">
+                <template slot-scope="scope">
+                    <span>{{scope.row.ucallBusinessType | ucallBusinessTypeFilter(ucallBusinessTypeMapper)}}</span>
+                </template>
+            </el-table-column>
 
             <!-- 任务描述 -->
             <el-table-column :label="'任务描述'" min-width="180px" prop="companyDesc"/>
@@ -49,10 +66,32 @@
         <!-- 添加弹窗 -->
         <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
             <!-- 自定义表单的校验规则 -->
-            <el-form :model="temp" :rules="rules" label-position="left" label-width="100px" ref="dataForm" style="max-width: 80%; margin:auto">
+            <el-form 
+                :model="temp" 
+                :rules="rules" 
+                label-position="right" 
+                label-width="100px" 
+                ref="dataForm" 
+                style="max-width: 80%; margin:auto">
                 <!-- 业务方名称:必填、长度校验 -->
                 <el-form-item :label="'业务方名称'" prop="companyName">
                     <el-input placeholder="在此输入名称" v-model="temp.companyName"/>
+                </el-form-item>
+                <!-- UCall业务类型，非必填 -->
+                <el-form-item :label="'业务方名称'" prop="ucallBusinessType">
+                    <el-select 
+                        v-model="temp.ucallBusinessType" 
+                        clearable 
+                        placeholder="请选择UCall业务方"
+                        style="width:100%"
+                        >
+                        <el-option
+                        v-for="item in ucallBusinessTypeMapper"
+                        :key="item.code"
+                        :label="item.name"
+                        :value="item.code">
+                        </el-option>
+                    </el-select>
                 </el-form-item>
                 <!-- 描述：文本域根据父级容器大小自适应 -->
                 <el-form-item :label="'描述'" prop="companyDesc">
@@ -75,7 +114,13 @@
 
 <script>
     // 接口api
-    import {getList, createOrEdit, deleteOne} from '@/api/company'
+    import {
+        getList, 
+        createOrEdit, 
+        deleteOne,
+        // 获取UCall业务类型
+        getUcallBusinessType
+        } from '@/api/company'
     import {parseTime} from '@/utils'
     // 分页组件，封装了element组件
     import Pagination from '@/components/Pagination'
@@ -85,7 +130,12 @@
         components: {
             Pagination
         },
-        filters: {},
+        filters: {
+            // UCall业务类型
+            ucallBusinessTypeFilter(code,mapper){
+                return mapper.find(v=>v.code == code)?.name
+            }
+        },
         data() {
             return {
                 tableKey: 0,
@@ -114,7 +164,9 @@
                     // 业务方名称
                     companyName: '',
                     // 业务方描述
-                    companyDesc: ''
+                    companyDesc: '',
+                    // UCall业务方类型
+                    ucallBusinessType:''
                 },
                 // 表单校验规则
                 rules: {
@@ -138,7 +190,12 @@
                         }
                     ]
 
-                }
+                },
+                // ucall商业类型码表
+                ucallBusinessTypeMapper:[],
+                // 显示UCall业务方
+                showUCallBusiness:false
+            
             }
         },
         created() {
@@ -146,6 +203,8 @@
         },
         mounted() {
             this.getDy()
+            // 获取UCall类型码表
+            this.getUCallbusinessType()
         },
         methods: {
             getList() {
@@ -156,6 +215,12 @@
                     this.total = response.total
                     // 模拟请求延时效果 setTimeout(() => {     this.listLoading = false; }, 2.6 * 1000);
                     this.listLoading = false
+                })
+            },
+            // 获取UCall业务类型
+            getUCallbusinessType(){
+                getUcallBusinessType().then(res=>{
+                    this.ucallBusinessTypeMapper = res.rows
                 })
             },
             // 搜索
@@ -170,7 +235,8 @@
                     type: null,
                     companyId: undefined,
                     companyName: '',
-                    companyDesc: ''
+                    companyDesc: '',
+                    ucallBusinessType:''
                 }
             },
             // 创建业务方

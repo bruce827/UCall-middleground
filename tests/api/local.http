@@ -26,3 +26,6 @@ content-type: application/json
 
 ### 任务列表
 http://localhost:9528/dev-api/vue-admin-template/mission/list
+
+### UCall业务类型
+http://localhost:9528/dev-api/vue-admin-template/company/ucallBusinessType

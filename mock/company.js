@@ -3,6 +3,17 @@ const Mock = require('mockjs')
 const {
     param2Obj
 } = require('./utils')
+/** 
+ * UCall业务类型
+ * 
+*/
+const UCallBusinessType = Mock.mock({
+    'items|10': [{
+        BusinessId:'@id',
+        code:'@string',
+        name:'@cword(7)'
+    }]
+})
 /**
  * 业务方数据
  */
@@ -16,6 +27,8 @@ const data = Mock.mock({
         companyName: '@ctitle(6, 10)',
         // 业务方描述
         companyDesc: '@cparagraph(1)',
+        // UCall业务类型,实际接口为1对1绑定
+        ucallBusinessType:UCallBusinessType.items[0].code
     }]
 })
 /**
@@ -51,6 +64,7 @@ const accountData = Mock.mock({
     
     }]
 })
+
 
 module.exports = [
     // 业务方列表
@@ -161,6 +175,8 @@ module.exports = [
                 // 类型
                 type
             } = req.body
+            console.log('新增');
+            
             console.log(req.body);
             
             return {
@@ -213,6 +229,18 @@ module.exports = [
                 code: 200,
                 msg: '验证码发送成功',
                 success: 0
+            }
+        }
+    },
+    // UCall业务类型
+    {
+        url: '/vue-admin-template/company/ucallBusinessType',
+        type: 'get',
+        response: config => {
+            return {
+                code: 200,
+                total: UCallBusinessType.items.length,
+                rows: UCallBusinessType.items
             }
         }
     },
