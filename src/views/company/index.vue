@@ -32,10 +32,12 @@
                 v-if="showUCallBusiness"
                 :label="'UCall业务类型'" 
                 align="center" 
-                min-width="110px">
-                <template slot-scope="scope">
-                    <span>{{scope.row.ucallBusinessType | ucallBusinessTypeFilter(ucallBusinessTypeMapper)}}</span>
-                </template>
+                min-width="110px"
+                prop="ucallBusinessType"
+                >
+                <!-- <template slot-scope="scope">
+                    <span>{{scope.row.ucallBusinessTypeId | ucallBusinessTypeFilter(ucallBusinessTypeMapper)}}</span>
+                </template> -->
             </el-table-column>
 
             <!-- 任务描述 -->
@@ -84,12 +86,14 @@
                         clearable 
                         placeholder="请选择UCall业务方"
                         style="width:100%"
+                        @clear="clearBussinessOption"
+                        @change="selectChange"
                         >
                         <el-option
-                        v-for="item in ucallBusinessTypeMapper"
-                        :key="item.code"
+                        v-for="item in temp.selectUCallBusiness"
+                        :key="item.id"
                         :label="item.name"
-                        :value="item.code">
+                        :value="item.id">
                         </el-option>
                     </el-select>
                 </el-form-item>
@@ -133,7 +137,7 @@
         filters: {
             // UCall业务类型
             ucallBusinessTypeFilter(code,mapper){
-                return mapper.find(v=>v.code == code)?.name
+                return mapper?.find(v=>v.id == code)?.name
             }
         },
         data() {
@@ -166,7 +170,10 @@
                     // 业务方描述
                     companyDesc: '',
                     // UCall业务方类型
-                    ucallBusinessType:''
+                    ucallBusinessTypeId:null,
+                    ucallBusinessType:null,
+                    // 可选业务类型
+                    selectUCallBusiness:[]
                 },
                 // 表单校验规则
                 rules: {
@@ -175,10 +182,6 @@
                         {
                             required: true,
                             message: '名称为必填',
-                            trigger: 'blur'
-                        }, {
-                            min: 4,
-                            message: "您输入的名称太短啦",
                             trigger: 'blur'
                         }
                     ],
@@ -194,7 +197,7 @@
                 // ucall商业类型码表
                 ucallBusinessTypeMapper:[],
                 // 显示UCall业务方
-                showUCallBusiness:false
+                showUCallBusiness:true
             
             }
         },
@@ -204,7 +207,7 @@
         mounted() {
             this.getDy()
             // 获取UCall类型码表
-            this.getUCallbusinessType()
+            // this.getUCallbusinessType()
         },
         methods: {
             getList() {
@@ -218,10 +221,18 @@
                 })
             },
             // 获取UCall业务类型
-            getUCallbusinessType(){
-                getUcallBusinessType().then(res=>{
-                    this.ucallBusinessTypeMapper = res.rows
-                })
+            getUCallbusinessType(id){
+                if(id){
+                    // 编辑操作
+                    getUcallBusinessType({companyId:id}).then(res => {
+                        this.temp.selectUCallBusiness = res.data
+                    })
+                }else{
+                    // 页面加载或新增时
+                    getUcallBusinessType().then(res=>{
+                        this.temp.selectUCallBusiness = res.data
+                    })
+                }
             },
             // 搜索
             handleFilter() {
@@ -236,22 +247,28 @@
                     companyId: undefined,
                     companyName: '',
                     companyDesc: '',
-                    ucallBusinessType:''
+                    ucallBusinessType:null,
+                    ucallBusinessTypeId:null,
+                    selectUCallBusiness:[]
                 }
             },
             // 创建业务方
-            handleCreate() {
+            async handleCreate() {
                 // 重置表单
                 this.resetTemp()
-                // 弹窗状态
-                this.dialogStatus = 'create'
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                    // 创建页面加载时不需要校验
-                    this
-                        .$refs['dataForm']
-                        .clearValidate()
-                })
+                // 先获取可选择的UCall业务类型
+                await this.getUCallbusinessType()
+
+                 // 弹窗状态
+                        this.dialogStatus = 'create'
+                        this.dialogFormVisible = true
+                        this.$nextTick(() => {
+                            // 创建页面加载时不需要校验
+                            this
+                                .$refs['dataForm']
+                                .clearValidate()
+                        })
+                
             },
             // 创建
             createData() {
@@ -259,21 +276,13 @@
                     .$refs['dataForm']
                     .validate(valid => {
                         // 表单校验与重名校验都通过
-                        if (valid && this.nameValidator(this.temp.companyName, this.list)) {
+                        if (valid) {
                             this.temp.type = 0
                             // 模拟请求，不需要返回结果
                             createOrEdit(this.temp).then((res) => {
-                                // TODO: 联调时删除
-                                this.temp.companyId = parseInt(Math.random() * 100) +
-                                        Math.pow(100, 2) // 随机生成id
-                                this.temp.createDate = '2020-12-12'
-                                this
-                                    .list
-                                    .unshift(this.temp)
-                                // 假数据结束
                                 this.dialogFormVisible = false
                                 // 刷新列表 TODO:联调时候放开
-                                // this.getList()
+                                this.getList()
                                 this.$notify({title: '成功', message: res.msg, type: 'success', duration: 2000})
                             })
                         }
@@ -281,13 +290,22 @@
             },
             // 编辑业务方
             handleUpdate(row) {
-                this.temp = Object.assign({}, row)
-                this.dialogStatus = 'update'
-                this.dialogFormVisible = true
-                this.$nextTick(() => {
-                    this
-                        .$refs['dataForm']
-                        .clearValidate()
+                // 清空表单
+                this.resetTemp()
+                // 先获取可选择的UCall业务类型
+                getUcallBusinessType({companyId:row.companyId}).then(res => {
+                        this.temp = Object.assign({}, row)
+                        this.temp.selectUCallBusiness = res.data
+                        this.dialogStatus = 'update'
+                        this.dialogFormVisible = true
+                        console.log(this.temp);
+                        debugger
+
+                        this.$nextTick(() => {
+                            this
+                                .$refs['dataForm']
+                                .clearValidate()
+                        })
                 })
             },
             // 修改
@@ -296,18 +314,14 @@
                     .$refs['dataForm']
                     .validate(valid => {
                         if (valid) {
-                            const tempData = Object.assign({}, this.temp, {type:1})
+                            const tempData = Object.assign({}, this.temp, {
+                                type:1,
+                                // ucallBusinessTypeId:this.temp.ucallBusinessType
+                                })
+                            console.log(tempData);
+                            debugger
                             createOrEdit(tempData).then((res) => {
-                                // TODO:联调时候删除
-                                for (const v of this.list) {
-                                    if (v.companyId === this.temp.companyId) {
-                                        const index = this.list.indexOf(v)
-                                        this.list.splice(index, 1, this.temp)
-                                        break
-                                    }
-                                }
-                                // TODO：联调时候打开
-                                // this.getList()
+                                this.getList()
                                 this.dialogFormVisible = false
                                 this.$notify({title: '成功', message: res.msg, type: 'success', duration: 2000})
                             })
@@ -316,13 +330,7 @@
             },
             handleDelete(row) {
                 deleteOne({companyId:row.companyId}).then(res=>{
-                    // TODO:联调时候删除
-                    const index = this.list.indexOf(row)
-                    this.list.splice(index, 1)
-                    
-                    // TODO:联调时候打开
-                    // this.getList()
-
+                    this.getList()
                     this.$notify({title: '成功', message: res.msg, type: 'success', duration: 2000})
                 })
                 
@@ -338,6 +346,12 @@
                 if (dyHeight > 768) {
                     this.listQuery.pageSize = 20
                 }
+            },
+            clearBussinessOption(val){
+                this.temp.ucallBusinessTypeId = null
+            },
+            selectChange(val){
+                this.temp.ucallBusinessTypeId = val
             }
         }
     }

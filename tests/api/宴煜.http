@@ -1,14 +1,41 @@
 ### 业务方配置
 ### 列表
-http://192.168.25.142:8081/businessconfig/list
+GET http://192.168.25.142:8081/center/businessconfig/list
+    ?pageNum=1
+    &pageSize=10
 
 ### 新增
-POST http://192.168.25.142:8081/businessconfig/add
+POST http://192.168.25.142:8081/center/businessconfig/add
 content-type: application/json
 
 {
     "companyName":"工具测试",
     "companyDesc":"工具测试描述"
+    
 }
 
 ### 修改
+PUT http://192.168.25.142:8081/center/businessconfig/edit
+content-type: application/json
+
+{
+    "companyDesc": "工具测试描述11111",
+    "companyId": 11,
+    "companyName": "工具测试233修改",
+    "createDate": "2020-10-30",
+    "creatorUserId": null,
+    "editorUserId": null,
+    "modifyDate": "2020-11-02 23:27:47",
+    "type": 1,
+    "ucallBusinessType": 56
+
+}
+
+### 删除
+DELETE http://192.168.25.142:8081/center/businessconfig/remove/7
+content-type: application/json
+
+### UCall业务方码表
+GET http://192.168.25.142:8081/center/businessconfig/getBusinessTypeList
+    ?companyId=11
+
