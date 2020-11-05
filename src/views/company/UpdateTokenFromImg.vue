@@ -12,7 +12,8 @@
                     <img alt="验证码" :src="temp.imgSrc" style="width: 200px; height: 60px;"/>
                     <el-button  @click="getImgData" size="medium" type="text">刷新</el-button>
                 </el-form-item>
-                    <!-- 验证码 -->
+                    
+                <!-- 验证码 -->
                 <el-form-item label="验证码" prop="code">
                     <el-input placeholder="在此输入验证码" v-model="temp.code"/>
                 </el-form-item>
@@ -21,7 +22,6 @@
                     <el-button @click="closeDialog">
                         取消
                     </el-button>
-                    <!-- 确定： 新增和编辑时不同的方法 -->
                     <el-button @click="handelCommitCode" type="primary">
                         提交
                     </el-button>
@@ -32,10 +32,20 @@
 
     <script>
         import {
+            /** 
+             * 学而思
+            */
             // 获取验证码图片
             getAccountToken,
             // 提交验证码
-            submitVerification
+            submitVerification,
+            /** 
+             * 水滴
+            */
+            // 获取水滴验证码
+            getSDCode,
+            // 水滴登录
+            submitSDVerification
         } from "@/api/company";
 
         export default {
@@ -90,7 +100,7 @@
                 }
             },
             methods: {
-                // 获取图片验证码
+                // xrs获取图片验证码
                 getImgData(){
                     // 获取验证码图片
                     getAccountToken({sysUserId:this.currentRow.sysUserId}).then(res=>{
@@ -99,6 +109,10 @@
                             imgSrc:res.data.image
                         })
                     })
+                },
+                // 水滴获取验证码
+                getSDCode(){
+                    
                 },
                 // 关闭弹窗
                 closeDialog() {

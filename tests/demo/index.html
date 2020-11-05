@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+
+        iframe {
+            margin: auto 0;
+            width: 800px;
+            height: 600px;
+        }
+    </style>
+</head>
+<body style="width: 100%;">
+    
+    <iframe 
+        src="https://passport.jd.com/new/login.aspx?ReturnUrl=http%3A%2F%2Fob.jd.com%2Findex.html
+    " 
+    frameborder="0"></iframe>
+    <button id="test">
+        获取cookie
+    </button>
+    <script>
+        window.onload = function(){
+
+        }
+        document.querySelector("#test").addEventListener('click',function(){
+            console.log('开始获取cookie');
+            debugger
+            var arr,reg=new RegExp("(^| )"+name+"=([^;]*)(;|$)");
+                if(arr=document.cookie.match(reg)){
+                    console.log(arr);
+                    
+                    debugger
+                    return unescape(arr[2]);
+                }
+                return null;
+        })
+    </script>
+</body>
+</html>

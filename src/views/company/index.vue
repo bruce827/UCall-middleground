@@ -281,7 +281,6 @@
                             // 模拟请求，不需要返回结果
                             createOrEdit(this.temp).then((res) => {
                                 this.dialogFormVisible = false
-                                // 刷新列表 TODO:联调时候放开
                                 this.getList()
                                 this.$notify({title: '成功', message: res.msg, type: 'success', duration: 2000})
                             })

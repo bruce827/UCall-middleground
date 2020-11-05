@@ -9,6 +9,8 @@ const missonLog = require('./missonLog')
 const company = require('./company')
 // 任务管理
 const mission = require('./mission')
+// 账号验证码获取
+const accountVerification = require('./accountVerification')
 
 
 
@@ -19,7 +21,8 @@ const mocks = [
   ...table,
   ...missonLog,
   ...company,
-  ...mission
+  ...mission,
+  ...accountVerification
 ]
 
 

@@ -60,7 +60,7 @@
             <!-- 最后使用时间 -->
             <el-table-column :label="'最后使用时间'" align="center" prop="LastRunTime" width="160px"/>
             <!-- 账户状态 -->
-            <el-table-column :label="'业务方'" align="center" prop="company.name" min-width="120px"/>
+            <el-table-column :label="'业务方'" align="center" prop="companyName" min-width="120px"/>
             <!-- 账户状态 -->
             <el-table-column label="账户状态" align="center" prop="accountStus" width="120px">
                 <template slot-scope="scope">
@@ -94,11 +94,19 @@
         <!-- 添加弹窗 -->
         <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
             <!-- 自定义表单的校验规则 -->
-            <el-form :model="temp" :rules="rules" label-position="left" label-width="100px" ref="dataForm" style="max-width: 80%; margin:auto">
+            <el-form :model="temp" :rules="rules" label-position="right" label-width="100px" ref="dataForm" style="max-width: 80%; margin:auto">
                 <!-- 业务方 -->
                 <el-form-item :label="'业务方名称'" prop="companyId">
-                    <el-select class="filter-item" placeholder="请选择业务方" v-model="temp.companyId">
-                        <el-option :key="item.value" :label="item.label" :value="item.value" v-for="item in dialogCompanyMapper"/>
+                    <el-select 
+                        class="filter-item" 
+                        placeholder="请选择业务方" 
+                        v-model="temp.companyId"
+                        >
+                        <el-option 
+                            :key="item.value" 
+                            :label="item.label" 
+                            :value="item.value" 
+                            v-for="item in dialogCompanyMapper"/>
                     </el-select>
                 </el-form-item>
                 <!-- 账户类型 -->
@@ -113,7 +121,7 @@
                     </el-select>
                 </el-form-item>
                 <!-- 账号 -->
-                <el-form-item :label="'账户类型'" prop="account">
+                <el-form-item :label="'账号'" prop="account">
                     <el-input placeholder="在此输入账号" v-model="temp.account"/>
                 </el-form-item>
                 <!-- 密码 -->
@@ -208,7 +216,7 @@
     ]
 
     export default {
-        name: "Company",
+        name: "CompanyAccount",
         components: {
             Pagination,
             UpdateTokenFromImg
@@ -276,6 +284,8 @@
                     accountType: null,
                     // 业务方id
                     companyId: undefined,
+                    // 业务方名称
+                    companyName:undefined,
                     // 业务方描述
                     accountDesc: ""
                 },
@@ -317,9 +327,11 @@
                 const mapper = this
                     .list
                     .reduce((total, currentValue, currentIndex, arr) => {
-                        let _obj = currentValue?.company;
-                        if(!total.some(item=>(item.code == _obj.code))){
-                            total.push(_obj)
+                        if(!total.some(item=>(item.code == currentValue.companyId))){
+                            total.push({
+                                code:currentValue.companyId,
+                                name:currentValue.companyName
+                            })
                         }
                         return total;
                     }, []);
@@ -401,39 +413,27 @@
                         // 表单校验与重名校验都通过
                         if (valid) {
                             this.temp.type = 0;
-                            // 模拟请求，不需要返回结果
                             createOrEditAccount(this.temp).then((res) => {
-                                // TODO: 联调时删除
-                                this.temp.sysUserId = parseInt(Math.random() * 100) +
-                                        Math.pow(100, 2); // 随机生成id
-                                this.temp.createDate = "2020-12-12";
-                                this.temp.missions = "测试任务";
-                                this.temp.company = {
-                                    code: 123,
-                                    name: "测试业务方"
-                                };
-                                this.temp.accountStus = 0;
-                                this
-                                    .list
-                                    .unshift(this.temp);
-                                // 假数据结束
                                 this.dialogFormVisible = false;
-                                // 刷新列表 TODO:联调时候放开
-                                // this.getList()
+                                this.getList()
                                 this.$notify({title: "成功", message: res.msg, type: "success", duration: 2000});
                             });
                         }
                     });
             },
             // 编辑业务方
-            handleUpdate(row) {
+            async handleUpdate(row) {
                 // 选项需要映射后单独赋值
                 this.temp = Object.assign({}, row,{
+                    // 业务方id
+                    companyId:row.companyId,
                     // 业务方
-                    companyId:row.company.name,
+                    companyName:row.companyName,
                     // 账户类型
                     accountType:accountTypeMapper[row.accountType]?.label
                 });
+                // 获取全部业务方列表
+                await this.getCompanyList();
                 this.dialogStatus = "update";
                 this.dialogFormVisible = true;
                 this.$nextTick(() => {
@@ -474,15 +474,15 @@
             handleDelete(row) {
                 deleteOneAccount({sysUserId: row.sysUserId}).then((res) => {
                     // TODO:联调时候删除
-                    const index = this
-                        .list
-                        .indexOf(row);
-                    this
-                        .list
-                        .splice(index, 1);
+                    // const index = this
+                    //     .list
+                    //     .indexOf(row);
+                    // this
+                    //     .list
+                    //     .splice(index, 1);
 
                     // TODO:联调时候打开
-                    // this.getList()
+                    this.getList()
 
                     this.$notify({title: "成功", message: res.msg, type: "success", duration: 2000});
                 });

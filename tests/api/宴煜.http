@@ -39,3 +39,39 @@ content-type: application/json
 GET http://192.168.25.142:8081/center/businessconfig/getBusinessTypeList
     ?companyId=11
 
+### 业务方账户管理
+### 列表查询
+GET http://192.168.25.142:8081/center/accountmanagement/list
+    ?pageNum=1
+    &pageSize=10
+    # &account=账户1
+    # &companyId=6
+
+### 新增账户
+POST http://192.168.25.142:8081/center/accountmanagement/add
+content-type: application/json
+
+{
+    "account":"ceshi",
+    "password":"123",
+    "companyId":"6",
+    "accountType":"2",
+    "accountDesc":"是爱上地"
+}
+
+### 删除
+DELETE http://192.168.25.142:8081/center/accountmanagement/remove/5
+
+
+### 编辑账户
+PUT http://192.168.25.142:8081/center/accountmanagement/edit
+content-type: application/json
+
+{
+    "sysUserId":"4",
+    "account":"asdad",
+    "password":"asd",
+    "companyId":"6",
+    "accountType":"0",
+    "accountDesc":"asd"
+}

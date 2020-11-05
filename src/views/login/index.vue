@@ -94,6 +94,10 @@ export default {
       immediate: true
     }
   },
+  mounted:function(){
+    // TODO：与UCall做token验证
+    this.handleLogin()
+  },
   methods: {
     showPwd() {
       if (this.passwordType === 'password') {

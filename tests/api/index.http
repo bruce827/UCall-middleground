@@ -3,3 +3,12 @@ http://localhost:9528/dev-api/vue-admin-template/table/list
 
 ### 任务日志
 http://localhost:9528/dev-api/vue-admin-template/missonLog/list
+
+
+### 京东
+POST https://passport.jd.com/uc/showAuthCode?r=0.30442857578527516&version=2015
+content-type: application/json
+
+{
+    "loginName":"新鑫的我"
+}
